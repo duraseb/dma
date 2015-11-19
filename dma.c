@@ -314,7 +314,7 @@ static void
 deliver(struct qitem *it)
 {
 	int error;
-	unsigned int backoff = MIN_RETRY, slept;
+	unsigned int backoff = MIN_RETRY;
 	struct timeval now;
 	struct stat st;
 
@@ -346,19 +346,12 @@ retry:
 				 MAX_TIMEOUT);
 			goto bounce;
 		}
-		for (slept = 0; slept < backoff;) {
-			slept += SLEEP_TIMEOUT - sleep(SLEEP_TIMEOUT);
-			if (flushqueue_since(slept)) {
-				backoff = MIN_RETRY;
-				goto retry;
-			}
-		}
-		if (slept >= backoff) {
-			/* pick the next backoff between [1.5, 2.5) times backoff */
-			backoff = backoff + backoff / 2 + random() % backoff;
-			if (backoff > MAX_RETRY)
-				backoff = MAX_RETRY;
-		}
+		snprintf(errmsg, sizeof(errmsg), "Backing off for %d seconds.", backoff);
+		sleep(backoff);
+		/* pick the next backoff between [1.5, 2.5) times backoff */
+		backoff = backoff + backoff / 2 + random() % backoff;
+		if (backoff > MAX_RETRY)
+			backoff = MAX_RETRY;
 		goto retry;
 
 	case -1:
