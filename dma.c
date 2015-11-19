@@ -346,12 +346,13 @@ retry:
 				 MAX_TIMEOUT);
 			goto bounce;
 		}
-		snprintf(errmsg, sizeof(errmsg), "Backing off for %d seconds.", backoff);
-		sleep(backoff);
-		/* pick the next backoff between [1.5, 2.5) times backoff */
-		backoff = backoff + backoff / 2 + random() % backoff;
+		/* pick the next backoff between [1.25, 2.5) times backoff */
+		srandom(now.tv_usec);
+		backoff = backoff + backoff / 4 + random() % backoff;
 		if (backoff > MAX_RETRY)
 			backoff = MAX_RETRY;
+		syslog(LOG_INFO, "Backing off for %d seconds.", backoff);
+		sleep(backoff);
 		goto retry;
 
 	case -1:
