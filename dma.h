@@ -116,6 +116,7 @@ struct qitem {
 	FILE *mailf;
 	int remote;
 	int deliverafter;
+	int backoff;
 };
 LIST_HEAD(queueh, qitem);
 

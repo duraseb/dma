@@ -138,11 +138,13 @@ writequeuef(struct qitem *it)
 			"ID: %s\n"
 			"Sender: %s\n"
 			"Recipient: %s\n"
-			"DeliverAfter: %d\n",
+			"DeliverAfter: %d\n"
+			"BackOff: %d\n",
 			 it->queueid,
 			 it->sender,
 			 it->addr,
-			 it->deliverafter
+			 it->deliverafter,
+			 it->backoff
 		 );
 
 	if (error <= 0)
@@ -162,7 +164,7 @@ readqueuef(struct queue *queue, char *queuefn)
 	FILE *queuef = NULL;
 	char *s;
 	char *queueid = NULL, *sender = NULL, *addr = NULL;
-	int deliverafter = 0;
+	int deliverafter = 0, backoff = 0;
 	struct qitem *it = NULL;
 
 	bzero(&itmqueue, sizeof(itmqueue));
@@ -198,6 +200,8 @@ readqueuef(struct queue *queue, char *queuefn)
 			addr = s;
 		} else if (strcmp(line, "DeliverAfter") == 0) {
 			deliverafter = atoi(s);
+		} else if (strcmp(line, "BackOff") == 0) {
+			backoff = atoi(s);
 		} else {
 			syslog(LOG_DEBUG, "ignoring unknown queue info `%s' in `%s'",
 			       line, queuefn);
@@ -221,6 +225,7 @@ malformed:
 	it->queueid = queueid; queueid = NULL;
 	it->queuefn = queuefn; queuefn = NULL;
 	it->deliverafter = deliverafter;
+	it->backoff = backoff;
 	LIST_INSERT_HEAD(&queue->queue, it, next);
 
 out:

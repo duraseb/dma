@@ -363,6 +363,9 @@ deliver(struct qitem *it)
 				 MAX_TIMEOUT);
 			goto bounce;
 		}
+		if (it->backoff > 0) {
+			backoff = it->backoff;
+		}
 		/* pick the next backoff between [1.25, 2.5) times backoff */
 		srandom(now.tv_usec);
 		backoff = backoff + backoff / 4 + random() % backoff;
@@ -370,6 +373,7 @@ deliver(struct qitem *it)
 			backoff = MAX_RETRY;
 		syslog(LOG_INFO, "Backing off for %d seconds.", backoff);
 		it->deliverafter = now.tv_sec + backoff;
+		it->backoff = backoff;
 		if (writequeuef(it) != 0) {
 			syslog(LOG_ERR, "unable to update queue file `%s'", it->queuefn);
 			exit(EX_SOFTWARE);
