@@ -330,7 +330,6 @@ deliver(struct qitem *it)
 
 	snprintf(errmsg, sizeof(errmsg), "unknown bounce reason");
 
-retry:
 	syslog(LOG_INFO, "<%s> trying delivery", it->addr);
 
 	if (it->remote)
