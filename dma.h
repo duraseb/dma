@@ -212,6 +212,7 @@ void run_queue(struct queue *);
 int newspoolf(struct queue *);
 int linkspool(struct queue *);
 int load_queue(struct queue *);
+int writequeuef(struct qitem *);
 void delqueue(struct qitem *);
 int acquirespool(struct qitem *);
 void dropspool(struct queue *, struct qitem *);

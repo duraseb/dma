@@ -118,7 +118,7 @@ fail:
 	return (-1);
 }
 
-static int
+int
 writequeuef(struct qitem *it)
 {
 	int error;

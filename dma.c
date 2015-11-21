@@ -363,7 +363,10 @@ retry:
 			backoff = MAX_RETRY;
 		syslog(LOG_INFO, "Backing off for %d seconds.", backoff);
 		it->deliverafter = now.tv_sec + backoff;
-		writequeuef(it);
+		if (writequeuef(it) != 0) {
+			syslog(LOG_ERR, "unable to update queue file `%s'", it->queuefn);
+			exit(EX_SOFTWARE);
+		}
 		exit(EX_OK);
 
 	case -1:
