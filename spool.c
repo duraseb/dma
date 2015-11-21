@@ -161,7 +161,7 @@ readqueuef(struct queue *queue, char *queuefn)
 	FILE *queuef = NULL;
 	char *s;
 	char *queueid = NULL, *sender = NULL, *addr = NULL;
-	int deliverafter = NULL;
+	int deliverafter = 0;
 	struct qitem *it = NULL;
 
 	bzero(&itmqueue, sizeof(itmqueue));
@@ -219,7 +219,7 @@ malformed:
 	it->sender = sender; sender = NULL;
 	it->queueid = queueid; queueid = NULL;
 	it->queuefn = queuefn; queuefn = NULL;
-	it->deliverafter = deliverafter; deliverafter = NULL;
+	it->deliverafter = deliverafter;
 	LIST_INSERT_HEAD(&queue->queue, it, next);
 
 out:
