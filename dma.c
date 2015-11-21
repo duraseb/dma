@@ -366,11 +366,14 @@ deliver(struct qitem *it)
 		if (it->backoff > 0) {
 			backoff = it->backoff;
 		}
-		/* pick the next backoff between [1.25, 2.5) times backoff */
-		srandom(now.tv_usec);
-		backoff = backoff + backoff / 4 + random() % backoff;
-		if (backoff > MAX_RETRY)
-			backoff = MAX_RETRY;
+		if (backoff < MAX_RETRY) {
+			/* pick the next backoff between [1.25, 2.5) times backoff */
+			srandom(now.tv_usec);
+			backoff = backoff + backoff / 4 + random() % backoff;
+			if (backoff > MAX_RETRY) {
+				backoff = MAX_RETRY;
+			}
+		}
 		syslog(LOG_INFO, "Backing off for %d seconds.", backoff);
 		it->deliverafter = now.tv_sec + backoff;
 		it->backoff = backoff;
