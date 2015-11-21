@@ -124,7 +124,7 @@ writequeuef(struct qitem *it)
 	int error;
 	int queuefd;
 
-	if (it->queuef == NULL)
+	if (it->queuef == NULL) {
 		queuefd = open_locked(it->queuefn, O_CREAT|O_EXCL|O_RDWR, 0660);
 		if (queuefd == -1)
 			return (-1);
