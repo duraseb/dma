@@ -362,10 +362,6 @@ deliver(struct qitem *it)
 			backoff = MAX_RETRY;
 		syslog(LOG_INFO, "Backing off for %d seconds.", backoff);
 		it->deliverafter = now.tv_sec + backoff;
-		if (it->queuef != NULL)
-			fclose(it->queuef);
-		if (it->mailf != NULL)
-			fclose(it->mailf);
 		if (writequeuef(it) != 0) {
 			syslog(LOG_ERR, "unable to update queue file `%s'", it->queuefn);
 			exit(EX_SOFTWARE);
