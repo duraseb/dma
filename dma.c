@@ -245,6 +245,7 @@ go_background(struct queue *queue)
 	struct sigaction sa;
 	struct qitem *it;
 	pid_t pid;
+	struct timeval now;
 
 	if (daemonize && daemon(0, 0) != 0) {
 		syslog(LOG_ERR, "can not daemonize: %m");
@@ -256,7 +257,16 @@ go_background(struct queue *queue)
 	sa.sa_handler = SIG_IGN;
 	sigaction(SIGCHLD, &sa, NULL);
 
+	if (gettimeofday(&now, 0) != 0) {
+		syslog(LOG_ERR, "unable to fetch time");
+		exit(EX_OSERR);
+	}
+
 	LIST_FOREACH(it, &queue->queue, next) {
+		/* Check if the back off period is defined and in the past */
+		if (now.tv_sec < it->deliverafter) {
+			continue;
+		}
 		/* No need to fork for the last dest */
 		if (LIST_NEXT(it, next) == NULL)
 			goto retit;
@@ -306,8 +316,8 @@ retit:
 		}
 	}
 
-	syslog(LOG_CRIT, "reached dead code");
-	exit(EX_SOFTWARE);
+	syslog(LOG_INFO, "no valid queue items");
+	exit(EX_OK);
 }
 
 static void
@@ -352,8 +362,9 @@ retry:
 		if (backoff > MAX_RETRY)
 			backoff = MAX_RETRY;
 		syslog(LOG_INFO, "Backing off for %d seconds.", backoff);
-		sleep(backoff);
-		goto retry;
+		it->deliverafter = now.tv_sec + backoff;
+		writequeuef(it);
+		exit(EX_OK);
 
 	case -1:
 	default:
