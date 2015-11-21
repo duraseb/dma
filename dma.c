@@ -263,11 +263,13 @@ process_q:
 		syslog(LOG_ERR, "unable to fetch time");
 		exit(EX_OSERR);
 	}
+	syslog(LOG_INFO, "Checking mail queue");
 	flushqueue_signal();
 
 	LIST_FOREACH(it, &queue->queue, next) {
 		/* Check if the back off period is defined and in the past */
-		if (now.tv_sec < it->deliverafter) {
+		if ((int)now.tv_sec < it->deliverafter) {
+			syslog(LOG_INFO, "Skipping item %s for the next %ds", it->queueid, it->deliverafter - (int)now.tv_sec);
 			continue;
 		}
 		/* No need to fork for the last dest */
@@ -319,8 +321,8 @@ retit:
 		}
 	}
 	slept = sleep(SLEEP_TIMEOUT);
-	if (flushqueue_since(SLEEP_TIMEOUT - slept + 1)) {
-		/* Another process read the queue so this one get exit */
+	if (flushqueue_since(SLEEP_TIMEOUT - slept - 1) > 0) {
+		syslog(LOG_INFO, "Another process read the queue. Exiting.");
 		exit(EX_OK);
 	}
 	goto process_q;
