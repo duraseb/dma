@@ -246,6 +246,7 @@ go_background(struct queue *queue)
 	struct qitem *it;
 	pid_t pid;
 	struct timeval now;
+	int slept;
 
 	if (daemonize && daemon(0, 0) != 0) {
 		syslog(LOG_ERR, "can not daemonize: %m");
@@ -257,10 +258,12 @@ go_background(struct queue *queue)
 	sa.sa_handler = SIG_IGN;
 	sigaction(SIGCHLD, &sa, NULL);
 
+process_q:
 	if (gettimeofday(&now, 0) != 0) {
 		syslog(LOG_ERR, "unable to fetch time");
 		exit(EX_OSERR);
 	}
+	flushqueue_signal();
 
 	LIST_FOREACH(it, &queue->queue, next) {
 		/* Check if the back off period is defined and in the past */
@@ -315,9 +318,12 @@ retit:
 			break;
 		}
 	}
-
-	syslog(LOG_INFO, "no valid queue items");
-	exit(EX_OK);
+	slept = sleep(SLEEP_TIMEOUT);
+	if (flushqueue_since(SLEEP_TIMEOUT - slept + 1)) {
+		/* Another process read the queue so this one get exit */
+		exit(EX_OK);
+	}
+	goto process_q;
 }
 
 static void
