@@ -272,9 +272,6 @@ process_q:
 			syslog(LOG_INFO, "Skipping item %s for the next %ds", it->queueid, it->deliverafter - (int)now.tv_sec);
 			continue;
 		}
-		/* No need to fork for the last dest */
-		if (LIST_NEXT(it, next) == NULL)
-			goto retit;
 
 		pid = fork();
 		switch (pid) {
@@ -289,7 +286,6 @@ process_q:
 			 *
 			 * return and deliver mail
 			 */
-retit:
 			/*
 			 * If necessary, acquire the queue and * mail files.
 			 * If this fails, we probably were raced by another
@@ -312,6 +308,8 @@ retit:
 			return (it);
 
 		default:
+			if (LIST_NEXT(it, next) == NULL)
+				goto reprocess;
 			/*
 			 * Parent:
 			 *
@@ -320,6 +318,7 @@ retit:
 			break;
 		}
 	}
+reprocess:
 	slept = sleep(SLEEP_TIMEOUT);
 	if (flushqueue_since(SLEEP_TIMEOUT - slept - 1) > 0) {
 		syslog(LOG_INFO, "Another process read the queue. Exiting.");
