@@ -134,6 +134,7 @@ writequeuef(struct qitem *it)
 		if (it->queuef == NULL)
 			return (-1);
 	}
+	rewind(it->queuef);
 	error = fprintf(it->queuef,
 			"ID: %s\n"
 			"Sender: %s\n"
