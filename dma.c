@@ -358,6 +358,10 @@ deliver(struct qitem *it)
 			syslog(LOG_ERR, "lost queue file `%s'", it->queuefn);
 			exit(EX_SOFTWARE);
 		}
+		if (stat(it->mailfn, &st) != 0) {
+			syslog(LOG_ERR, "lost email file `%s'", it->mailfn);
+			exit(EX_SOFTWARE);
+		}
 		if (gettimeofday(&now, NULL) == 0 &&
 		    (now.tv_sec - st.st_mtim.tv_sec > MAX_TIMEOUT)) {
 			snprintf(errmsg, sizeof(errmsg),
