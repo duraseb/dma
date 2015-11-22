@@ -247,6 +247,7 @@ go_background(struct queue *queue)
 	pid_t pid;
 	struct timeval now;
 	int slept;
+	int kids;
 
 	if (daemonize && daemon(0, 0) != 0) {
 		syslog(LOG_ERR, "can not daemonize: %m");
@@ -265,6 +266,7 @@ process_q:
 	}
 	syslog(LOG_INFO, "Checking mail queue");
 	flushqueue_signal();
+	kids = 0;
 
 	LIST_FOREACH(it, &queue->queue, next) {
 		/* Check if the back off period is defined and in the past */
@@ -308,7 +310,8 @@ process_q:
 			return (it);
 
 		default:
-			if (LIST_NEXT(it, next) == NULL)
+			kids++;
+			if (kids >= 100 || LIST_NEXT(it, next) == NULL)
 				goto reprocess;
 			/*
 			 * Parent:
