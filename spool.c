@@ -166,6 +166,7 @@ readqueuef(struct queue *queue, char *queuefn)
 	char *queueid = NULL, *sender = NULL, *addr = NULL;
 	int deliverafter = 0, backoff = 0;
 	struct qitem *it = NULL;
+	int line_length;
 
 	bzero(&itmqueue, sizeof(itmqueue));
 	LIST_INIT(&itmqueue.queue);
@@ -177,7 +178,11 @@ readqueuef(struct queue *queue, char *queuefn)
 	while (!feof(queuef)) {
 		if (fgets(line, sizeof(line), queuef) == NULL || line[0] == 0)
 			break;
-		line[strlen(line) - 1] = 0;	/* chop newline */
+		line_length = strlen(line);
+		if (line_length < 2) {
+			continue;
+		}
+		line[line_length - 1] = 0;	/* chop newline */
 
 		s = strchr(line, ':');
 		if (s == NULL)
