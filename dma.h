@@ -51,10 +51,10 @@
 #define BUF_SIZE	2048
 #define ERRMSG_SIZE	1024
 #define USERNAME_SIZE	50
-#define MIN_RETRY	(3*60)		/* 3 minutes */
+#define MIN_RETRY	(2*60)		/* 2 minutes */
 #define MAX_RETRY	(60*60)	/* retry at least every hour */
-#define MAX_TIMEOUT	(2*24*60*60)	/* give up after 2 days */
-#define SLEEP_TIMEOUT	30		/* check for queue flush every 30 seconds */
+#define MAX_TIMEOUT	(1*24*60*60)	/* give up after 1 day */
+#define SLEEP_TIMEOUT	20		/* check for queue flush every 20 seconds */
 #ifndef PATH_MAX
 #define PATH_MAX	1024		/* Max path len */
 #endif
